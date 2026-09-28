@@ -1,0 +1,13 @@
+PUT _ml/datafeeds/datafeed-cloudwatch_alarm_ml_analysis
+{
+  "job_id": "cloudwatch_alarm_ml_analysis",
+  "indices": ["logs-aws_cloudwatch_alarms-production"], // Target your data stream explicitly
+  "query": {
+    "bool": {
+      "must": [
+        { "exists": { "field": "aws.cloudwatch.state.reason" } }
+      ]
+    }
+  }
+}
+

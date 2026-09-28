@@ -1,0 +1,22 @@
+POST api/detection_engine/rules
+{
+  "name": "High Severity CloudWatch Alarm ML Anomaly",
+  "description": "Triggers an operational alert when the CloudWatch Alarm ML engine discovers a critical text volume spike or rare error.",
+  "rule_type_id": "machine_learning_anomaly_detection",
+  "interval": "15m",
+  "enabled": true,
+  "params": {
+    "jobId": "cloudwatch_alarm_ml_analysis",
+    "severityThreshold": 75
+  },
+  "actions": [
+    {
+      "group": "default",
+      "id": "your-slack-or-pagerduty-connector-id",
+      "params": {
+        "message": "🚨 *Critical CloudWatch Anomaly Detected by ML Job* 🚨\n\n*Rule:* {{context.rule.name}}\n*Job ID:* `{{context.jobId}}` \n*Max Anomaly Score:* `{{context.anomalyScore}}` \n\n*Top Influencing Alarms:* \n{{#context.anomalies}} \n- *Alarm:* `{{influencers.aws.cloudwatch.alarm_name}}` \n- *Category Detected:* `mlcategory {{influencers.mlcategory}}` \n- *Reason for Alert:* This specific pattern occurred unexpectedly. \n{{/context.anomalies}}\n\nCheck the Anomaly Explorer Dashboard immediately to trace structural infrastructure drifts."
+      }
+    }
+  ]
+}
+

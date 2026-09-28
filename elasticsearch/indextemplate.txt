@@ -1,0 +1,14 @@
+PUT _index_template/logs-aws_cloudwatch_alarms-template
+{
+  "index_patterns": ["logs-aws_cloudwatch_alarms-*"],
+  "data_stream": { },
+  "composed_of": ["logs-aws_cloudwatch_alarms-mappings"], 
+  "template": {
+    "settings": {
+      "index.lifecycle.name": "my_datastream_policy", // Reuses your ILM policy
+      "index.lifecycle.rollover_alias": "logs-aws_cloudwatch_alarms"
+    }
+  },
+  "priority": 500
+}
+

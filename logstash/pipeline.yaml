@@ -1,0 +1,55 @@
+input {
+  sqs {
+    queue                   => "your-cloudwatch-alarms-sqs-queue-name"
+    region                  => "us-east-1"
+    access_key_id           => "YOUR_AWS_ACCESS_KEY"
+    secret_access_key       => "YOUR_AWS_SECRET_KEY"
+    codec                   => "json" # Automatically parses the SQS string block to JSON
+    type                    => "cloudwatch-alarms"
+  }
+}
+
+filter {
+  if [type] == "cloudwatch-alarms" {
+    # Optional: If the SQS message is wrapped inside an SNS envelope body, unwrap it first:
+    # if [Message] {
+    #   json { source => "Message" target => "alarm" }
+    # }
+    
+    # Standardize schema mappings to cleanly match your Elasticsearch index structure
+    mutate {
+      add_field => { "[aws][cloudwatch][alarm_name]" => "%{[AlarmName]}" }
+      add_field => { "[aws][cloudwatch][alarm_description]" => "%{[AlarmDescription]}" }
+      add_field => { "[aws][cloudwatch][state][value]" => "%{[NewStateValue]}" }
+      add_field => { "[aws][cloudwatch][state][reason]" => "%{[NewStateReason]}" }
+      
+      # Clean up fields to preserve index storage space
+      remove_field => [ "AlarmName", "AlarmDescription", "NewStateValue", "NewStateReason", "OldStateValue" ]
+    }
+    
+    # Alarms carry a StateChangeTime attribute (e.g., 2026-03-15T11:29:32Z)
+    # Target this into @timestamp so Elasticsearch records when the alarm actually fired
+    if [StateChangeTime] {
+      date {
+        match => [ "StateChangeTime", "ISO8601" ]
+        target => "@timestamp"
+        remove_field => [ "StateChangeTime" ]
+      }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts                 => ["https://your-elasticsearch-host:9200"]
+    api_key               => "your_elastic_api_key_or_credentials"
+    
+    # Route directly to your predefined data stream template
+    data_stream           => true
+    data_stream_type      => "logs"
+    data_stream_dataset   => "aws_cloudwatch_alarms"
+    data_stream_namespace => "production" 
+    # Automatically resolves destination as: logs-aws_cloudwatch_alarms-production
+  }
+}
+

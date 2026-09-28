@@ -1,0 +1,32 @@
+PUT _ml/anomaly_detectors/cloudwatch_alarm_ml_analysis
+{
+  "description": "Analyzes and groups CloudWatch Alarm state reasons to catch volume anomalies and rare error clusters.",
+  "analysis_config": {
+    "bucket_span": "15m",                  // Time increments evaluated by the model
+    "categorization_field_name": "aws.cloudwatch.state.reason", // Field to cluster text
+    "categorization_filters": [           // Strips dynamic values (hex tokens, numbers) for better groupings
+      "\b[0-9a-fA-F]{8,}\b", 
+      "\\b\\d+\\b"
+    ],
+    "detectors": [
+      {
+        "detector_description": "Detects unusual volume spikes in specific alarm types",
+        "function": "count",
+        "by_field_name": "mlcategory"       // Intercepts the generated machine learning categories
+      },
+      {
+        "detector_description": "Highlights rare or structural newly introduced errors",
+        "function": "rare",
+        "by_field_name": "mlcategory"
+      }
+    ],
+    "influencers": [ "mlcategory", "aws.cloudwatch.alarm_name" ]
+  },
+  "data_description": {
+    "time_field": "@timestamp"
+  },
+  "analysis_limits": {
+    "model_memory_limit": "20mb"           // Retains lightweight footprints for text categorical mapping
+  }
+}
+

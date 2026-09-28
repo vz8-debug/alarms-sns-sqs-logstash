@@ -1,0 +1,40 @@
+PUT _component_template/logs-aws_cloudwatch_alarms-mappings
+{
+  "template": {
+    "mappings": {
+      "properties": {
+        "@timestamp": { "type": "date" },
+        "aws": {
+          "properties": {
+            "cloudwatch": {
+              "properties": {
+                "alarm_name": { "type": "keyword" },
+                "alarm_description": { "type": "text" },
+                "state": {
+                  "properties": {
+                    "value": { "type": "keyword" },     // ALARM, OK, INSUFFICIENT_DATA
+                    "reason": { "type": "text" },
+                    "reason_data": { "type": "text" }
+                  }
+                },
+                "metric": {
+                  "properties": {
+                    "name": { "type": "keyword" },
+                    "namespace": { "type": "keyword" }, // e.g., AWS/SQS, AWS/EC2
+                    "metric_stat": {
+                      "properties": {
+                        "stat": { "type": "keyword" },
+                        "period": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+

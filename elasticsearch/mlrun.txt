@@ -1,0 +1,3 @@
+POST _ml/anomaly_detectors/cloudwatch_alarm_ml_analysis/_open
+POST _ml/datafeeds/datafeed-cloudwatch_alarm_ml_analysis/_start?start=now-30d
+
