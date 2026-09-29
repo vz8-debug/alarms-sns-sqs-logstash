@@ -1,6 +1,6 @@
 input {
   sqs {
-    queue                   => "your-cloudwatch-alarms-sqs-queue-name"
+    queue                   => "logstash-ingest-queue"
     region                  => "us-east-1"
     access_key_id           => "YOUR_AWS_ACCESS_KEY"
     secret_access_key       => "YOUR_AWS_SECRET_KEY"
